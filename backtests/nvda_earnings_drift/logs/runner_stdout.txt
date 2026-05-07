@@ -1,0 +1,18 @@
+{
+  "final_value": 1493047.7717003066,
+  "total_return": 0.49304777170030656,
+  "annual_return": 0.22337057536331284,
+  "max_drawdown": -0.14236450068916248,
+  "sharpe": 1.2563762434806391,
+  "calmar": 1.569,
+  "sortino": 0.6907,
+  "win_rate": 0.7142857142857143,
+  "profit_loss_ratio": 1.5517,
+  "profit_factor": 3.8791,
+  "max_consecutive_loss": 2,
+  "avg_holding_days": 2.4,
+  "trade_count": 14,
+  "benchmark_return": 1.295095,
+  "excess_return": -0.802047,
+  "information_ratio": -0.6027
+}

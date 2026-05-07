@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__vibe-trading__list_skills",
+      "mcp__vibe-trading__load_skill",
+      "mcp__vibe-trading__get_market_data",
+      "mcp__vibe-trading__web_search",
+      "Bash(python3)",
+      "mcp__vibe-trading__analyze_options",
+      "Bash(mkdir -p /Users/mouyuanyap/code/vibe-trade/backtests/nvda_rsi_mr/code /Users/mouyuanyap/code/vibe-trade/backtests/nvda_ema_cross/code /Users/mouyuanyap/code/vibe-trade/backtests/nvda_earnings_drift/code)",
+      "mcp__vibe-trading__backtest"
+    ],
+    "additionalDirectories": [
+      "/Users/mouyuanyap/code/vibe-trade/backtests/nvda_rsi_mr"
+    ]
+  }
+}

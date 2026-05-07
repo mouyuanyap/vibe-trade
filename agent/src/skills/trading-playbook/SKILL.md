@@ -47,6 +47,71 @@ needs a fundamental catalyst to justify its probability weight.
 
 ---
 
+## Generation Log Protocol
+
+Every playbook invocation MUST produce a companion generation log that records
+exactly how the playbook was built — what data was found, what tools were called,
+what assumptions were made, and what gaps exist. The log is the audit trail.
+
+**Log file path**: `reports/logs/{TICKER}_generation_log_{YYYY-MM-DD}.md`
+
+**Log structure**:
+
+```markdown
+# {TICKER} Playbook Generation Log — {YYYY-MM-DD}
+
+**Generated at**: {timestamp} | **Total phases**: 7 | **Total tool calls**: N
+
+## Phase Summary
+
+| Phase | Status | Time | Tools Used |
+|-------|--------|------|------------|
+| 1. Macro & Industry | COMPLETE | ~Xm | ... |
+| ... | ... | ... | ... |
+
+## Detailed Phase Logs
+
+### Phase N: [Name] — [COMPLETE / PARTIAL]
+
+**Time**: approx X minutes
+**Skills loaded**: skill1, skill2
+**Tools used**: tool1 (N calls), tool2 (M calls)
+
+**Key data found**:
+| Data Point | Value | Source |
+|------------|-------|--------|
+| ... | ... | ... |
+
+**Assumptions made**:
+- Assumption — justification
+
+**Data gaps** (searched but not found):
+- Gap — proxy used
+
+**Decisions**:
+- Decision — rationale
+
+## Assumptions Register
+(All assumptions from all phases, consolidated)
+
+## Data Gaps Register
+(All gaps from all phases, consolidated)
+
+## Tool Call Summary
+| Tool | Count | Phases |
+|------|-------|--------|
+| ... | ... | ... |
+
+## Balance Gate Results
+(Pass/fail for each of the 10 checkboxes)
+```
+
+**At the START of each phase**, note the phase number, name, and start time.
+**At the END of each phase**, record the log entry following the template above.
+Accumulate all entries and write the final log file in Phase 7.
+
+---
+
 ## Execution Pipeline
 
 Work through each phase in order. Load each named skill before executing that phase.
@@ -102,6 +167,17 @@ phase should be interpreted through this lens.
    - Major sector conferences or trade shows
    - These go into the Risk Events Calendar (Section 8 of output)
 
+7. **Log this phase** — record:
+   - Web search queries executed and URLs consulted
+   - All specific indicator values found (Fed rate, CPI, PCE, PMI, GDP — with dates)
+   - Exchange rates used (USD/SGD, USD/IDR, etc. — with dates)
+   - Industry growth forecasts and their sources (e.g. "Mordor Intelligence, ASEAN taxi $26.2B")
+   - ETF flow data: specific dollar amounts and date ranges
+   - Competitive landscape data: market share percentages, competitor financials
+   - Regulatory/political findings: specific laws, dates, impact estimates
+   - Any macro data that was searched for but NOT found (data gaps)
+   - Assumptions made about rate path, FX trajectory, or sector growth
+
 ---
 
 ### PHASE 2 · Deep Fundamentals & Valuation
@@ -156,6 +232,18 @@ absolute and relative bases. **Specific quantitative outputs are mandatory.**
    - Beat/miss history over the last 8 quarters
    - Analyst consensus (Strong Buy / Buy / Hold / Sell) and average target price
 
+8. **Log this phase** — record:
+   - Data sources used (yfinance ticker calls, web search queries with specific URLs)
+   - All financial metrics found (revenue, GMV, gross margin, op income, net income, EPS, FCF, EBITDA — with exact values and fiscal periods)
+   - Balance sheet data: cash, debt, net cash, shares outstanding, book value
+   - DCF assumptions chosen and WHY (e.g. "WACC 11%: beta 0.93 × ERP 5.5% + Rf 4.5% = 9.6%, rounded up to 11% for early-stage profitability risk")
+   - PE band source data: 5-year PE values (min/25th/50th/75th/max) and data source; if not applicable (recently profitable), note why
+   - Peer comparison raw data for each peer before formatting into table
+   - Analyst ratings: number of analysts, rating distribution, individual PTs with firm names
+   - Segment breakdown: revenue by business line and geography with percentages
+   - Any data searched for but NOT found (e.g. "Q1 2026 gross margin not disclosed")
+   - Estimated time spent on this phase
+
 ---
 
 ### PHASE 3 · Technical Analysis
@@ -197,6 +285,18 @@ valuation support/resistance zones found in Phase 2.
    - Scan for H&S, Cup & Handle, Double Top/Bottom, triangles, wedges
    - For active patterns: measured-move target + stop level
 
+7. **Log this phase** — record:
+   - Market data fetched: date range, interval, source used (auto/yfinance/etc.)
+   - All indicator values computed (EMA levels, RSI, MACD, ADX, BB, ATR, Stoch — with exact values)
+   - Key price levels identified: support/resistance with sources (Fib, swing points, volume profile)
+   - Ichimoku: Tenkan/Kijun/Senkou values, cloud status, signal verdict
+   - Elliott Wave: wave count, projection targets, invalidation level, rule violations
+   - Candlestick patterns found (dates, types, prices)
+   - SMC: FVGs identified (price ranges and dates), OB zones, BoS/ChoCH signals
+   - Volume analysis: 20-day avg volume, latest volume ratio
+   - Data range: how many candles were analyzed (e.g. "123 trading days, 2025-11-10 to 2026-05-07")
+   - Any indicators that were NOT computed (e.g. "EMA200 not available — only 123 days of data")
+
 ---
 
 ### PHASE 4 · Options & Flow Intelligence
@@ -214,6 +314,16 @@ valuation support/resistance zones found in Phase 2.
 
 2. Cross-reference options levels with fundamental valuation zones from Phase 2.
    For example: max pain at $X that also sits near DCF fair value → higher significance.
+
+3. **Log this phase** — record:
+   - Options data retrieved: expiry dates checked, IV values found
+   - Max Pain levels for each expiry with source
+   - Put/Call ratios (volume and OI) with values
+   - IV Rank / IV Percentile with source
+   - Any UOA or block trades detected (strike, size, direction)
+   - Dealer gamma positioning (long/short, gamma flip level if available)
+   - Key OI clusters at strikes
+   - If options data is limited or unavailable for this ticker (common for smaller caps), note this explicitly and explain what was used as proxy (e.g. "GRAB has limited options market; used BS model pricing as approximation")
 
 ---
 
@@ -233,6 +343,13 @@ valuation support/resistance zones found in Phase 2.
    - Which factors have had the highest predictive power for `{ticker}`'s
      next-month returns historically? Rank and weight accordingly.
    - Highlight any factor currently giving a contrarian signal vs the composite
+
+3. **Log this phase** — record:
+   - Factor scores computed (momentum, quality, value, growth) with exact values and percentiles
+   - Peer universe used for cross-sectional comparison (which stocks, how many)
+   - IC/IR results: which factor had highest IC, IC values, IR values
+   - Any factors that could NOT be computed and why (e.g. "P/E factor skipped — negative earnings")
+   - Contrarian signals identified
 
 ---
 
@@ -255,6 +372,16 @@ valuation support/resistance zones found in Phase 2.
 
 3. Note whether the best backtested strategy aligns with the 30-day catalyst calendar.
    (e.g., Earnings Drift strategy + upcoming earnings date = high relevance)
+
+4. **Log this phase** — record:
+   - Backtest config: date range, initial capital, commission, data source used
+   - Signal engine code paths (which files were written)
+   - Metrics for EACH strategy (A/B/C): total return, Sharpe, max DD, win rate, profit factor, trade count, avg holding days
+   - Benchmark return over the same period
+   - Which strategy was selected as "best" and why
+   - Any backtest failures or errors and how they were resolved
+   - Earnings dates hardcoded in the earnings drift strategy
+   - Whether the best backtested strategy aligns with the 30-day window
 
 ---
 
@@ -280,6 +407,22 @@ Export all indicators to Pine Script via `pine-script`.
 - [ ] Earnings date prominently flagged in every section if within the 30-day window
 
 If any checkbox fails, return to the relevant phase and gather the missing data before outputting.
+
+**Compile generation log — after balance gate passes:**
+
+1. Collect the per-phase log entries accumulated during Phases 1–7.
+2. Build the consolidated log file at `reports/logs/{TICKER}_generation_log_{YYYY-MM-DD}.md`
+   following the template in the Generation Log Protocol section.
+3. The log MUST include:
+   - Phase Summary table with status, time, and tools for all 7 phases
+   - Detailed Phase Logs for each phase (all data found, assumptions, gaps)
+   - Assumptions Register: every assumption across all phases, consolidated with justifications
+   - Data Gaps Register: everything searched for but not found, with proxy values used
+   - Tool Call Summary: count of each tool type, which phases used them
+   - Balance Gate Results: each of the 10 checkboxes with PASS/FAIL status
+4. Save the log file alongside the playbook report.
+5. If a phase was skipped or produced PARTIAL results, flag it prominently in the log
+   and explain what was missing and why.
 
 ---
 
@@ -428,7 +571,13 @@ Each must be a specific, observable event (not a vague "sentiment changes").
 Before finishing, confirm all of the following are complete:
 
 - [ ] **Balance gate passed** (all 10 checkboxes from Phase 7)
-- [ ] `report-generate` — Markdown playbook report saved
+- [ ] `report-generate` — Markdown playbook report saved to `reports/{TICKER}_30Day_Playbook_{DATE}.md`
+- [ ] **Generation log compiled and saved** to `reports/logs/{TICKER}_generation_log_{DATE}.md`
+  - [ ] Phase Summary table complete for all 7 phases
+  - [ ] Assumptions Register consolidated
+  - [ ] Data Gaps Register consolidated
+  - [ ] Tool Call Summary complete
+  - [ ] Balance Gate Results recorded
 - [ ] `pine-script` — TradingView Pine Script v6 exported with all indicators
 - [ ] Strategy code from Phase 6 saved via `write_file`
 - [ ] All key levels from Section 4 are in the Pine Script as horizontal lines

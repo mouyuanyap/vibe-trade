@@ -8,7 +8,8 @@
       "Bash(python3)",
       "mcp__vibe-trading__analyze_options",
       "Bash(mkdir -p /Users/mouyuanyap/code/vibe-trade/backtests/nvda_rsi_mr/code /Users/mouyuanyap/code/vibe-trade/backtests/nvda_ema_cross/code /Users/mouyuanyap/code/vibe-trade/backtests/nvda_earnings_drift/code)",
-      "mcp__vibe-trading__backtest"
+      "mcp__vibe-trading__backtest",
+      "mcp__vibe-trading__read_url"
     ],
     "additionalDirectories": [
       "/Users/mouyuanyap/code/vibe-trade/backtests/nvda_rsi_mr"

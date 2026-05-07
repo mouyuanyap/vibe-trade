@@ -1,0 +1,11 @@
+{
+  "source": "yfinance",
+  "codes": ["AAPL"],
+  "start_date": "2024-05-08",
+  "end_date": "2026-05-08",
+  "interval": "1D",
+  "initial_cash": 1000000,
+  "commission": 0.001,
+  "extra_fields": null,
+  "engine": "daily"
+}

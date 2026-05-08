@@ -1,0 +1,11 @@
+Ticker,Name,Sector,Composite Score,Final Weight %,ATR %,Risk Contribution %
+GOOGL,Alphabet Inc. Class A,Communication Services,77.9,12.89,2.59,8.0
+AMZN,Amazon.com Inc.,Consumer Discretionary,71.5,12.04,2.74,7.9
+ADI,Analog Devices Inc.,Technology,72.2,11.49,2.99,8.3
+AVGO,Broadcom Inc.,Technology,72.3,10.47,3.54,8.9
+AMAT,Applied Materials Inc.,Technology,73.3,10.01,3.91,9.4
+LRCX,Lam Research Corporation,Technology,74.4,9.25,4.68,10.4
+STX,Seagate Technology Holdings plc,Technology,74.9,8.70,5.43,11.4
+MU,Micron Technology Inc.,Technology,76.8,8.67,5.69,11.9
+AMD,Advanced Micro Devices Inc.,Technology,74.2,8.30,6.02,12.0
+MRVL,Marvell Technology Inc.,Technology,71.6,8.18,5.92,11.7

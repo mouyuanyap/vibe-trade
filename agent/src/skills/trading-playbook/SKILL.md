@@ -21,8 +21,19 @@ report with macro & industry context, fundamental deep dive, composite scorecard
 levels map, scenario analysis, week-by-week calendar, specific trade setups, risk event
 calendar, and a daily monitoring checklist.
 
+**Execution requirement:** The agent MUST execute every phase below in strict
+order. Do not skip, reorder, or shortcut any phase. Do not fabricate data, skip
+a phase because data is hard to find, or make up scores without running the named
+tools and loading the named skills. Every phase produces mandatory inputs for the
+next. If you are tempted to shortcut, log the gap instead — never fake it.
+
 **Required input:** The user must provide a ticker symbol (e.g. AAPL, 700.HK, 000001.SZ).
 If the user has not specified a ticker, ask for it before starting the pipeline.
+
+**Data accuracy is mandatory.** Every data point in the report MUST be traceable
+to a tool call or web source. If data cannot be found, record it as a data gap in
+the generation log (see Generation Log Protocol below) — do not fabricate or infer
+without clearly stating the assumption and its justification.
 
 ---
 

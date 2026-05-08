@@ -12,7 +12,7 @@ description: >
   "which stocks in [ETF] should I hold", or "build me a portfolio from [ETF]".
   Works for US, HK, A-share, and global ETFs. Fully orchestrates etf-analysis,
   multi-factor, factor-research, technical-basic, sector-rotation, asset-allocation,
-  options-strategy, macro-analysis, us-etf-flow, backtest, and swarm presets.
+  options-strategy, macro-analysis, us-etf-flow, and backtest.
 ---
 
 # ETF Top-10 Portfolio Builder
@@ -21,6 +21,12 @@ Given any ETF, this skill runs a full agentic pipeline to identify the 10 highes
 conviction constituent stocks and recommends how to size each position in a portfolio
 bucket. Output is a scored leaderboard, a correlation-adjusted allocation table, and
 a one-page portfolio brief.
+
+**Execution requirement:** The agent MUST execute every phase below in strict
+order. Do not skip, reorder, or shortcut any phase. Do not fabricate data, skip
+a phase because data is hard to find, or make up scores without running the named
+tools and loading the named skills. Every phase produces mandatory inputs for the
+next. If you are tempted to shortcut, log the gap instead — never fake it.
 
 ---
 
@@ -35,16 +41,97 @@ The user provides:
 If any optional parameter is missing, use the defaults. Do not ask the user — proceed
 and state assumptions inline.
 
+**Data accuracy is mandatory.** Every data point in the report MUST be traceable
+to a tool call or web source. If data cannot be found, record it as a data gap in
+the generation log (see Generation Log Protocol below) — do not fabricate or infer
+without clearly stating the assumption and its justification.
+
+---
+
+## Generation Log Protocol
+
+Every portfolio builder invocation MUST produce a companion generation log that
+records exactly how the portfolio was built — what data was found, what tools
+were called, what assumptions were made, and what gaps exist. The log is the
+audit trail.
+
+**Log file path**: `reports/etf-portfolio/logs/{ETF}_generation_log_{YYYY-MM-DD}.md`
+
+**Log structure**:
+
+```markdown
+# {ETF} Portfolio Generation Log — {YYYY-MM-DD}
+
+**Generated at**: {timestamp} | **Total phases**: 8 | **Total tool calls**: N
+
+## Phase Summary
+
+| Phase | Status | Time | Tools Used |
+|-------|--------|------|------------|
+| 1. ETF Deconstruction | COMPLETE | ~Xm | ... |
+| 2. Multi-Factor Scoring | COMPLETE | ~Xm | ... |
+| 3. Technical Deep-Dive | COMPLETE | ~Xm | ... |
+| 4. Fundamental Validation | COMPLETE | ~Xm | ... |
+| 5. Macro & Sector Overlay | COMPLETE | ~Xm | ... |
+| 6. Options Flow Sanity Check | COMPLETE | ~Xm | ... |
+| 7. Portfolio Construction & Allocation | COMPLETE | ~Xm | ... |
+| 8. Report Output | COMPLETE | ~Xm | ... |
+
+## Detailed Phase Logs
+
+### Phase N: [Name] — [COMPLETE / PARTIAL]
+
+**Time**: approx X minutes
+**Skills loaded**: skill1, skill2
+**Tools used**: tool1 (N calls), tool2 (M calls)
+
+**Key data found**:
+| Data Point | Value | Source |
+|------------|-------|--------|
+| ... | ... | ... |
+
+**Assumptions made**:
+- Assumption — justification
+
+**Data gaps** (searched but not found):
+- Gap — proxy used
+
+**Decisions**:
+- Decision — rationale
+
+## Assumptions Register
+(All assumptions from all phases, consolidated)
+
+## Data Gaps Register
+(All gaps from all phases, consolidated)
+
+## Tool Call Summary
+| Tool | Count | Phases |
+|------|-------|--------|
+| ... | ... | ... |
+
+## Balance Gate Results
+(Pass/fail for each of the 10 checkboxes)
+```
+
+**At the START of each phase**, note the phase number, name, and start time.
+**At the END of each phase**, record the log entry following the template above.
+Accumulate all entries and write the final log file in Phase 8 (Report Output).
+
 ---
 
 ## Execution Pipeline
+
+Work through each phase in strict order. Load each named skill before executing
+that phase. Complete each phase fully before moving on. Do not skip, reorder, or
+shortcut any phase — the output is only as reliable as the weakest phase.
 
 ### PHASE 1 · ETF Deconstruction
 
 **Skills:** `etf-analysis`, `data-routing`, `yfinance`, `us-etf-flow`
 
 1. **Holdings extraction** — Via `etf-analysis`:
-   - Fetch the ETF's full constituent list with weights (use `yfinance` or `akshare`
+   - MUST fetch the ETF's full constituent list with weights (use `yfinance` or `akshare`
      for A-share ETFs, or `web_search` + `read_url` to scrape the fund provider's
      holdings page if the API doesn't cover it)
    - Record each holding's: ticker, name, sector, current weight (%), market cap
@@ -66,7 +153,8 @@ and state assumptions inline.
 
 **Skills:** `multi-factor`, `factor-research`, `technical-basic`
 
-Score every constituent on the following five factors. Use `get_market_data` to pull
+Score EVERY constituent on the following five factors. This is mandatory — do not
+skip any factor or any stock. Use `get_market_data` to pull
 the underlying data. For each stock, produce a score from 0–100 per factor.
 
 #### Factor Definitions
@@ -97,7 +185,7 @@ scores. Document the adjusted weights used.
 
 **Skills:** `technical-basic`, `candlestick`, `smc`
 
-After Phase 2, take the top 15 by Composite Score. For each, run:
+After Phase 2, MUST take the top 15 by Composite Score. For each, run ALL of:
 
 1. **Trend check** — Is price above 20 EMA, 50 EMA, 200 EMA? (1 point each → max 3)
 2. **Momentum check** — RSI(14) between 45–70 (healthy trend, not overbought)? MACD histogram rising?
@@ -117,7 +205,7 @@ Final ranked list → select **Top 10** by adjusted composite score.
 **Skills:** `financial-statement`, `edgar-sec-filings`, `earnings-forecast`,
 `valuation-model`
 
-For each of the 10 selected stocks, run a rapid fundamental check:
+For each of the 10 selected stocks, you MUST run ALL of these fundamental checks:
 
 | Check | Pass Condition | Action if Fail |
 |-------|---------------|----------------|
@@ -157,7 +245,7 @@ rank #11 from Phase 3, and run Phase 4 on it.
 
 **Skills:** `options-strategy`
 
-For each of the Top 10, pull a quick options snapshot:
+For each of the Top 10, you MUST pull a full options snapshot:
 - Put/Call ratio (volume): is it >1.3? (bearish signal — flag)
 - Any unusual bearish sweep in the last 5 trading days? (flag)
 - IV Rank: if >80, the market is pricing in elevated risk — flag and note
@@ -173,6 +261,7 @@ capped at **8%** as a risk control.
 
 #### Step 1 — Base Weights (Score-Proportional)
 
+MUST compute:
 ```
 raw_weight[i] = composite_score[i] / sum(composite_score[1..10])
 ```
@@ -215,32 +304,24 @@ Round down to whole shares. Report residual cash.
 
 ---
 
-### PHASE 8 · Swarm Validation
-
-Run swarm preset **`global_allocation_committee`**:
-```
-topic: "Review this proposed Top-10 concentrated portfolio derived from [ETF].
-Validate the allocation logic, stress-test for tail risks (single factor crash,
-sector drawdown, macro shock), and suggest any rebalancing if needed.
-Bull case and bear case for this basket over the next [horizon]."
-portfolio: [list of Top 10 with weights]
-```
-
-Run swarm preset **`risk_committee`**:
-```
-topic: "Audit the Top-10 [ETF] portfolio for: concentration risk, correlation
-risk, drawdown risk, and tail risk. Flag any position that represents outsized
-risk vs. its weight contribution. Approve or require adjustment."
-portfolio: [list of Top 10 with weights]
-```
-
-Incorporate any risk committee adjustments into final weights before output.
-
----
-
-### PHASE 9 · Report Output
+### PHASE 8 · Report Output
 
 **Skills:** `report-generate`
+
+**Balance gate — verify BEFORE compiling the report:**
+
+- [ ] ETF holdings extracted with full weight table (Phase 1)
+- [ ] All 5 factors scored for each constituent with percentile ranks (Phase 2)
+- [ ] Technical deep-dive run on top 15 candidates with Technical Bonus Score applied (Phase 3)
+- [ ] Fundamental checks completed for top 10; replacements made for any stock failing 3+ checks (Phase 4)
+- [ ] Macro & sector overlay applied with documented adjustments per stock (Phase 5)
+- [ ] Options flow checked for all top 10; bearish flags applied as weight caps (Phase 6)
+- [ ] Correlation-adjusted allocation computed with caps, floors, and volatility scaling (Phase 7)
+- [ ] Risk budgeting complete: HHI reported, largest risk contributor identified (Phase 7)
+- [ ] Portfolio weights respect sector 35% cap and individual caps per risk profile (Phase 7)
+- [ ] Generation log compiled with all 8 phases documented (see Generation Log Protocol)
+
+If any checkbox fails, return to the relevant phase and complete it before assembling the report.
 
 Compile into a structured report with these sections:
 
@@ -374,14 +455,35 @@ Weekly review triggers (re-run scoring if any of these occur):
 - [ ] Any stock drops below its Watch Level (from Section 3) → exit
 - [ ] Sector rotation signal flips for a dominant sector → rebalance
 
+**Compile generation log — after balance gate passes:**
+
+1. Collect the per-phase log entries accumulated during Phases 1–8.
+2. Build the consolidated log file at `reports/etf-portfolio/logs/{ETF}_generation_log_{YYYY-MM-DD}.md`
+   following the template in the Generation Log Protocol section.
+3. The log MUST include:
+   - Phase Summary table with status, time, and tools for all 8 phases
+   - Detailed Phase Logs for each phase (all data found, assumptions, gaps)
+   - Assumptions Register: every assumption across all phases, consolidated with justifications
+   - Data Gaps Register: everything searched for but not found, with proxy values used
+   - Tool Call Summary: count of each tool type, which phases used them
+   - Balance Gate Results: each of the 10 checkboxes with PASS/FAIL status
+4. Save the log file alongside the portfolio report.
+5. If a phase was skipped or produced PARTIAL results, flag it prominently in the log
+   and explain what was missing and why.
+
 ---
 
 ## Delivery Checklist
 
-- [ ] `report-generate` — HTML/PDF report saved
+- [ ] `report-generate` — Markdown report saved to `reports/etf-portfolio/{ETF}_Top10_Report_{YYYY-MM-DD}.md`
 - [ ] Allocation table exported via `write_file` as CSV
-- [ ] Swarm run IDs logged (`/swarm show` reference)
 - [ ] All 10 tickers + weights ready to paste into any broker interface
+- [ ] **Generation log compiled and saved** to `reports/etf-portfolio/logs/{ETF}_generation_log_{YYYY-MM-DD}.md`
+  - [ ] Phase Summary table complete for all 8 phases
+  - [ ] Assumptions Register consolidated
+  - [ ] Data Gaps Register consolidated
+  - [ ] Tool Call Summary complete
+  - [ ] Balance Gate Results recorded
 
 ---
 
@@ -402,8 +504,17 @@ Weekly review triggers (re-run scoring if any of these occur):
 - **If capital is not provided**: present allocation as percentages only.
   Add a note: "To get dollar amounts and share counts, tell me your total capital."
 
+- **Output paths**: Save the report to `reports/etf-portfolio/{ETF}_Top10_Report_{YYYY-MM-DD}.md`
+  and the generation log to `reports/etf-portfolio/logs/{ETF}_generation_log_{YYYY-MM-DD}.md`.
+  Do not use any other output directory.
+
 - **Rebalancing cadence**: recommend monthly rebalance for Aggressive,
   quarterly for Balanced/Conservative.
+
+- **Enforcement:** This skill is a mandatory sequential pipeline. Skipping a phase,
+  fabricating data, or shortcutting the process produces an invalid report. If you
+  are tempted to skip a phase because data is hard to get, log the gap and use the
+  best available proxy — do not omit the phase.
 
 - **Disclaimer**: append to all reports — *"This output is for research and educational
   purposes only. It does not constitute investment advice. Past factor performance

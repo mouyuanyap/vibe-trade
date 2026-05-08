@@ -1,0 +1,9 @@
+{
+  "source": "yfinance",
+  "codes": ["GOOGL.US"],
+  "start_date": "2024-05-08",
+  "end_date": "2026-05-08",
+  "initial_cash": 1000000,
+  "commission": 0.001,
+  "extra_fields": null
+}

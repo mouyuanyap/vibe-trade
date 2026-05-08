@@ -53,7 +53,7 @@ Every playbook invocation MUST produce a companion generation log that records
 exactly how the playbook was built — what data was found, what tools were called,
 what assumptions were made, and what gaps exist. The log is the audit trail.
 
-**Log file path**: `reports/logs/{TICKER}_generation_log_{YYYY-MM-DD}.md`
+**Log file path**: `reports/playbooks/logs/{TICKER}_generation_log_{YYYY-MM-DD}.md`
 
 **Log structure**:
 
@@ -411,7 +411,7 @@ If any checkbox fails, return to the relevant phase and gather the missing data 
 **Compile generation log — after balance gate passes:**
 
 1. Collect the per-phase log entries accumulated during Phases 1–7.
-2. Build the consolidated log file at `reports/logs/{TICKER}_generation_log_{YYYY-MM-DD}.md`
+2. Build the consolidated log file at `reports/playbooks/logs/{TICKER}_generation_log_{YYYY-MM-DD}.md`
    following the template in the Generation Log Protocol section.
 3. The log MUST include:
    - Phase Summary table with status, time, and tools for all 7 phases
@@ -571,8 +571,8 @@ Each must be a specific, observable event (not a vague "sentiment changes").
 Before finishing, confirm all of the following are complete:
 
 - [ ] **Balance gate passed** (all 10 checkboxes from Phase 7)
-- [ ] `report-generate` — Markdown playbook report saved to `reports/{TICKER}_30Day_Playbook_{DATE}.md`
-- [ ] **Generation log compiled and saved** to `reports/logs/{TICKER}_generation_log_{DATE}.md`
+- [ ] `report-generate` — Markdown playbook report saved to `reports/playbooks/{TICKER}_30Day_Playbook_{DATE}.md`
+- [ ] **Generation log compiled and saved** to `reports/playbooks/logs/{TICKER}_generation_log_{DATE}.md`
   - [ ] Phase Summary table complete for all 7 phases
   - [ ] Assumptions Register consolidated
   - [ ] Data Gaps Register consolidated
